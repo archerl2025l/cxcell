@@ -7,6 +7,10 @@ using System.Windows.Media;
 using System.Windows.Threading;
 using Drawing = System.Drawing;
 using WinForms = System.Windows.Forms;
+using WpfBrushes = System.Windows.Media.Brushes;
+using WpfColor = System.Windows.Media.Color;
+using WpfHorizontalAlignment = System.Windows.HorizontalAlignment;
+using WpfVerticalAlignment = System.Windows.VerticalAlignment;
 
 namespace CxCell;
 
@@ -153,7 +157,7 @@ public partial class MainWindow : Window
             BatteryStack.Children.Add(CreateStatusSlot(
                 "—",
                 "No supported Codex usage window is currently reported.",
-                Brushes.White));
+                WpfBrushes.White));
         }
 
         Height = Math.Max(1, BatteryStack.Children.Count) * NavigationIconPitchDip;
@@ -166,14 +170,14 @@ public partial class MainWindow : Window
         {
             Width = OverlayWidthDip,
             Height = NavigationIconPitchDip,
-            Background = Brushes.Transparent,
+            Background = WpfBrushes.Transparent,
             ToolTip = BuildTooltip(label, quota)
         };
 
         var content = new StackPanel
         {
-            HorizontalAlignment = HorizontalAlignment.Center,
-            VerticalAlignment = VerticalAlignment.Center
+            HorizontalAlignment = WpfHorizontalAlignment.Center,
+            VerticalAlignment = WpfVerticalAlignment.Center
         };
 
         content.Children.Add(CreateBatteryBody(quota));
@@ -181,9 +185,9 @@ public partial class MainWindow : Window
         content.Children.Add(new TextBlock
         {
             Text = label,
-            Foreground = new SolidColorBrush(Color.FromRgb(148, 163, 184)),
+            Foreground = new SolidColorBrush(WpfColor.FromRgb(148, 163, 184)),
             FontSize = 8,
-            HorizontalAlignment = HorizontalAlignment.Center,
+            HorizontalAlignment = WpfHorizontalAlignment.Center,
             Margin = new Thickness(0, 1, 0, 0)
         });
 
@@ -205,10 +209,10 @@ public partial class MainWindow : Window
 
         var body = new Border
         {
-            BorderBrush = new SolidColorBrush(Color.FromRgb(226, 232, 240)),
+            BorderBrush = new SolidColorBrush(WpfColor.FromRgb(226, 232, 240)),
             BorderThickness = new Thickness(1.5),
             CornerRadius = new CornerRadius(4),
-            Background = new SolidColorBrush(Color.FromArgb(26, 255, 255, 255)),
+            Background = new SolidColorBrush(WpfColor.FromArgb(26, 255, 255, 255)),
             Margin = new Thickness(0, 1, 2, 1),
             ClipToBounds = true
         };
@@ -217,7 +221,7 @@ public partial class MainWindow : Window
         var fill = new Border
         {
             Background = BrushFor(remaining),
-            HorizontalAlignment = HorizontalAlignment.Left,
+            HorizontalAlignment = WpfHorizontalAlignment.Left,
             Width = 27 * remaining / 100d,
             Opacity = 0.9
         };
@@ -225,11 +229,11 @@ public partial class MainWindow : Window
         var text = new TextBlock
         {
             Text = remaining.ToString(),
-            Foreground = Brushes.White,
+            Foreground = WpfBrushes.White,
             FontWeight = FontWeights.SemiBold,
             FontSize = 10,
-            HorizontalAlignment = HorizontalAlignment.Center,
-            VerticalAlignment = VerticalAlignment.Center
+            HorizontalAlignment = WpfHorizontalAlignment.Center,
+            VerticalAlignment = WpfVerticalAlignment.Center
         };
 
         bodyGrid.Children.Add(fill);
@@ -242,9 +246,9 @@ public partial class MainWindow : Window
             Width = 3,
             Height = 9,
             CornerRadius = new CornerRadius(0, 2, 2, 0),
-            Background = new SolidColorBrush(Color.FromRgb(226, 232, 240)),
-            VerticalAlignment = VerticalAlignment.Center,
-            HorizontalAlignment = HorizontalAlignment.Left
+            Background = new SolidColorBrush(WpfColor.FromRgb(226, 232, 240)),
+            VerticalAlignment = WpfVerticalAlignment.Center,
+            HorizontalAlignment = WpfHorizontalAlignment.Left
         };
         Grid.SetColumn(terminal, 1);
 
@@ -256,9 +260,9 @@ public partial class MainWindow : Window
     private static System.Windows.Media.Brush BrushFor(int remaining) =>
         remaining switch
         {
-            >= 50 => new SolidColorBrush(Color.FromRgb(34, 197, 94)),
-            >= 20 => new SolidColorBrush(Color.FromRgb(245, 158, 11)),
-            _ => new SolidColorBrush(Color.FromRgb(239, 68, 68))
+            >= 50 => new SolidColorBrush(WpfColor.FromRgb(34, 197, 94)),
+            >= 20 => new SolidColorBrush(WpfColor.FromRgb(245, 158, 11)),
+            _ => new SolidColorBrush(WpfColor.FromRgb(239, 68, 68))
         };
 
     private static string BuildTooltip(string label, QuotaWindow quota)
@@ -274,7 +278,7 @@ public partial class MainWindow : Window
         BatteryStack.Children.Add(CreateStatusSlot(
             "!",
             $"CxCell could not read Codex usage.\n{message}",
-            Brushes.OrangeRed));
+            WpfBrushes.OrangeRed));
         Height = NavigationIconPitchDip;
         TrackCodexWindow();
     }
@@ -285,7 +289,7 @@ public partial class MainWindow : Window
         {
             Width = OverlayWidthDip,
             Height = NavigationIconPitchDip,
-            Background = Brushes.Transparent,
+            Background = WpfBrushes.Transparent,
             ToolTip = tooltip
         };
 
@@ -295,8 +299,8 @@ public partial class MainWindow : Window
             Foreground = foreground,
             FontWeight = FontWeights.Bold,
             FontSize = 14,
-            HorizontalAlignment = HorizontalAlignment.Center,
-            VerticalAlignment = VerticalAlignment.Center
+            HorizontalAlignment = WpfHorizontalAlignment.Center,
+            VerticalAlignment = WpfVerticalAlignment.Center
         });
 
         return slot;
@@ -328,7 +332,7 @@ public partial class MainWindow : Window
             _shutdown.Dispose();
 
             _shutdownCompleted = true;
-            Dispatcher.BeginInvoke(new Action(Close));
+            _ = Dispatcher.BeginInvoke(new Action(Close));
         }
     }
 
