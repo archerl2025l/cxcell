@@ -60,7 +60,7 @@ The installer:
 
 After that, **do not use `dotnet run` for normal use**. Open and close Codex/ChatGPT normally; the quota overlay follows its lifecycle automatically.
 
-The watcher itself remains resident in the background so it can detect later Codex launches during the same Windows session. The visible overlay process is started/stopped with Codex.
+The watcher itself is installed as a separate lightweight `CxCellWatcher.exe` process and remains resident so it can detect later Codex launches during the same Windows session. The visible `CxCell.exe` overlay process is started and stopped with Codex/ChatGPT.
 
 ## Uninstall
 
