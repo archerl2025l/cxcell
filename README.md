@@ -40,9 +40,19 @@ For development from source:
 
 The installed build is self-contained and does not require a separate .NET runtime.
 
-## Recommended install
+## Install the release
 
-After cloning the repository and switching to the feature branch, run the installer once:
+For normal use, download `CxCell-v0.1.0-win-x64.zip` from the GitHub Release, extract it, then run:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\install.ps1
+```
+
+The release build is self-contained: a separate .NET runtime/SDK is not required. Codex CLI still needs to be installed and available on `PATH`.
+
+## Install from source
+
+For development or source-based installation, clone the repository and run:
 
 ```powershell
 git clone https://github.com/archerl2025l/cxcell.git
