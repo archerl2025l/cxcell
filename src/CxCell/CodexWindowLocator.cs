@@ -22,11 +22,8 @@ public sealed class CodexWindowLocator
             var processName = process.ProcessName;
             var title = process.MainWindowTitle;
 
-            var looksLikeCodex =
-                processName.Contains("codex", StringComparison.OrdinalIgnoreCase) ||
-                title.Contains("codex", StringComparison.OrdinalIgnoreCase);
-
-            if (!looksLikeCodex || !GetWindowRect(hwnd, out var rect))
+            if (!CodexHostMatcher.IsSupportedHost(processName, title) ||
+                !GetWindowRect(hwnd, out var rect))
                 return false;
 
             bounds = new WindowBounds(rect.Left, rect.Top, rect.Right, rect.Bottom);
