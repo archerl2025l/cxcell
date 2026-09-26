@@ -7,7 +7,7 @@ if (Test-Path $exe) {
     & $exe --uninstall-autostart
 }
 
-Get-Process CxCell -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+Get-Process CxCell,CxCellWatcher -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
 
 if (Test-Path $installDir) {
     Start-Sleep -Milliseconds 300
