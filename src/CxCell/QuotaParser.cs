@@ -32,7 +32,7 @@ public static class QuotaParser
             var kind = Classify(window.Value.DurationMinutes);
             if (kind == QuotaKind.FiveHour)
             {
-                fiveHour ??= ToQuotaWindow(kind, window.Value);
+                fiveHour ??= ToQuotaWindow(kind.Value, window.Value);
             }
             else if (kind == QuotaKind.Weekly)
             {
@@ -53,7 +53,7 @@ public static class QuotaParser
             // are intentionally omitted instead of guessing.
             var kind = Classify(primary.Value.DurationMinutes);
             if (kind == QuotaKind.FiveHour)
-                fiveHour = ToQuotaWindow(kind, primary.Value);
+                fiveHour = ToQuotaWindow(kind.Value, primary.Value);
             else if (kind == QuotaKind.Weekly)
                 weekly = ToQuotaWindow(kind, primary.Value);
         }
