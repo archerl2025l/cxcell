@@ -18,9 +18,11 @@ public sealed class CodexUsageClient : IAsyncDisposable
         try
         {
             await EnsureStartedAsync(cancellationToken);
+            // Codex CLI 0.147.0 expects unit/null params for this RPC. Newer app-server
+            // versions also allow omitted capabilities, so null is the most compatible request.
             var result = await RequestAsync(
                 "account/rateLimits/read",
-                new { excludeResetCreditDetails = true },
+                null,
                 cancellationToken);
 
             return QuotaParser.Parse(result);
