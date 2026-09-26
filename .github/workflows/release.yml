@@ -1,0 +1,73 @@
+name: release
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    if: startsWith(github.event.head_commit.message, 'release: v')
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Read version
+        id: version
+        shell: pwsh
+        run: |
+          [xml]$project = Get-Content .\src\CxCell\CxCell.csproj
+          $version = $project.Project.PropertyGroup.Version | Select-Object -First 1
+          if (-not $version) { throw "Version is missing from CxCell.csproj" }
+          "version=$version" >> $env:GITHUB_OUTPUT
+          "tag=v$version" >> $env:GITHUB_OUTPUT
+
+      - name: Publish Windows x64
+        shell: pwsh
+        run: |
+          dotnet publish .\src\CxCell\CxCell.csproj `
+            -c Release `
+            -r win-x64 `
+            --self-contained true `
+            -p:PublishSingleFile=true `
+            -p:IncludeNativeLibrariesForSelfExtract=true `
+            -o .\release\app
+
+      - name: Build release package
+        shell: pwsh
+        run: |
+          $stage = ".\release\package"
+          New-Item -ItemType Directory -Force -Path $stage | Out-Null
+          Copy-Item .\release\app\CxCell.exe "$stage\CxCell.exe"
+          Copy-Item .\scripts\install-release.ps1 "$stage\install.ps1"
+          Copy-Item .\scripts\uninstall.ps1 "$stage\uninstall.ps1"
+          Copy-Item .\RELEASE_NOTES.md "$stage\RELEASE_NOTES.md"
+
+          $zip = ".\release\CxCell-v${{ steps.version.outputs.version }}-win-x64.zip"
+          Compress-Archive -Path "$stage\*" -DestinationPath $zip -Force
+
+      - name: Create tag
+        shell: pwsh
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "${{ steps.version.outputs.tag }}" -m "CxCell ${{ steps.version.outputs.tag }}"
+          git push origin "${{ steps.version.outputs.tag }}"
+
+      - name: Create GitHub Release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ steps.version.outputs.tag }}" `
+            ".\release\CxCell-v${{ steps.version.outputs.version }}-win-x64.zip" `
+            --title "CxCell ${{ steps.version.outputs.tag }}" `
+            --notes-file .\RELEASE_NOTES.md
