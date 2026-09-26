@@ -5,12 +5,6 @@ using System.Windows.Controls;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Threading;
-using Drawing = System.Drawing;
-using WinForms = System.Windows.Forms;
-using WpfBrushes = System.Windows.Media.Brushes;
-using WpfColor = System.Windows.Media.Color;
-using WpfHorizontalAlignment = System.Windows.HorizontalAlignment;
-using WpfVerticalAlignment = System.Windows.VerticalAlignment;
 
 namespace CxCell;
 
@@ -19,9 +13,13 @@ public partial class MainWindow : Window
     // The Codex/ChatGPT left rail uses one visual slot per icon. Batteries occupy the
     // two slots immediately above Help instead of being positioned from the overlay bottom.
     private const double OverlayWidthDip = 44;
-    private const double SidebarIconCenterOffsetDip = 38;
-    private const double HelpIconCenterOffsetFromBottomDip = 116;
-    private const double NavigationIconPitchDip = 48;
+
+    // Desktop rail measurements are expressed in DIPs. On the user's 150% Windows scale
+    // these map to ~39 px from the client-left edge and ~102 px from client-bottom,
+    // matching the native Help icon center in both maximized and restored windows.
+    private const double SidebarIconCenterOffsetDip = 26;
+    private const double HelpIconCenterOffsetFromBottomDip = 68;
+    private const double NavigationIconPitchDip = 44;
 
     private readonly CodexUsageClient _usageClient = new();
     private readonly CodexWindowLocator _windowLocator = new();
@@ -29,8 +27,6 @@ public partial class MainWindow : Window
     private readonly DispatcherTimer _refreshTimer;
     private readonly CancellationTokenSource _shutdown = new();
     private readonly bool _managedLifecycle;
-    private readonly WinForms.NotifyIcon _trayIcon;
-    private readonly WinForms.ContextMenuStrip _trayMenu;
 
     private QuotaSnapshot _snapshot = new(null, null, null);
     private bool _refreshInProgress;
@@ -47,26 +43,6 @@ public partial class MainWindow : Window
 
         _refreshTimer = new DispatcherTimer { Interval = TimeSpan.FromMinutes(1) };
         _refreshTimer.Tick += async (_, _) => await RefreshUsageAsync();
-
-        _trayMenu = new WinForms.ContextMenuStrip();
-        _trayMenu.Items.Add("刷新额度", null, (_, _) =>
-            Dispatcher.BeginInvoke(new Action(async () => await RefreshUsageAsync())));
-        _trayMenu.Items.Add(new WinForms.ToolStripSeparator());
-        _trayMenu.Items.Add("退出 CxCell", null, (_, _) =>
-        {
-            Environment.ExitCode = CompanionWatcher.UserExitCode;
-            Dispatcher.BeginInvoke(new Action(Close));
-        });
-
-        _trayIcon = new WinForms.NotifyIcon
-        {
-            Text = "CxCell",
-            Icon = Drawing.SystemIcons.Application,
-            Visible = true,
-            ContextMenuStrip = _trayMenu
-        };
-        _trayIcon.DoubleClick += (_, _) =>
-            Dispatcher.BeginInvoke(new Action(async () => await RefreshUsageAsync()));
 
         Loaded += async (_, _) =>
         {
@@ -168,7 +144,7 @@ public partial class MainWindow : Window
             BatteryStack.Children.Add(CreateStatusSlot(
                 "—",
                 "No supported Codex usage window is currently reported.",
-                WpfBrushes.White));
+                Brushes.White));
         }
 
         Height = Math.Max(1, BatteryStack.Children.Count) * NavigationIconPitchDip;
@@ -181,14 +157,14 @@ public partial class MainWindow : Window
         {
             Width = OverlayWidthDip,
             Height = NavigationIconPitchDip,
-            Background = WpfBrushes.Transparent,
+            Background = Brushes.Transparent,
             ToolTip = BuildTooltip(label, quota)
         };
 
         var content = new StackPanel
         {
-            HorizontalAlignment = WpfHorizontalAlignment.Center,
-            VerticalAlignment = WpfVerticalAlignment.Center
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center
         };
 
         content.Children.Add(CreateBatteryBody(quota));
@@ -196,9 +172,9 @@ public partial class MainWindow : Window
         content.Children.Add(new TextBlock
         {
             Text = label,
-            Foreground = new SolidColorBrush(WpfColor.FromRgb(148, 163, 184)),
+            Foreground = new SolidColorBrush(Color.FromRgb(148, 163, 184)),
             FontSize = 8,
-            HorizontalAlignment = WpfHorizontalAlignment.Center,
+            HorizontalAlignment = HorizontalAlignment.Center,
             Margin = new Thickness(0, 1, 0, 0)
         });
 
@@ -220,10 +196,10 @@ public partial class MainWindow : Window
 
         var body = new Border
         {
-            BorderBrush = new SolidColorBrush(WpfColor.FromRgb(226, 232, 240)),
+            BorderBrush = new SolidColorBrush(Color.FromRgb(226, 232, 240)),
             BorderThickness = new Thickness(1.5),
             CornerRadius = new CornerRadius(4),
-            Background = new SolidColorBrush(WpfColor.FromArgb(26, 255, 255, 255)),
+            Background = new SolidColorBrush(Color.FromArgb(26, 255, 255, 255)),
             Margin = new Thickness(0, 1, 2, 1),
             ClipToBounds = true
         };
@@ -232,7 +208,7 @@ public partial class MainWindow : Window
         var fill = new Border
         {
             Background = BrushFor(remaining),
-            HorizontalAlignment = WpfHorizontalAlignment.Left,
+            HorizontalAlignment = HorizontalAlignment.Left,
             Width = 27 * remaining / 100d,
             Opacity = 0.9
         };
@@ -240,11 +216,11 @@ public partial class MainWindow : Window
         var text = new TextBlock
         {
             Text = remaining.ToString(),
-            Foreground = WpfBrushes.White,
+            Foreground = Brushes.White,
             FontWeight = FontWeights.SemiBold,
             FontSize = 10,
-            HorizontalAlignment = WpfHorizontalAlignment.Center,
-            VerticalAlignment = WpfVerticalAlignment.Center
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center
         };
 
         bodyGrid.Children.Add(fill);
@@ -257,9 +233,9 @@ public partial class MainWindow : Window
             Width = 3,
             Height = 9,
             CornerRadius = new CornerRadius(0, 2, 2, 0),
-            Background = new SolidColorBrush(WpfColor.FromRgb(226, 232, 240)),
-            VerticalAlignment = WpfVerticalAlignment.Center,
-            HorizontalAlignment = WpfHorizontalAlignment.Left
+            Background = new SolidColorBrush(Color.FromRgb(226, 232, 240)),
+            VerticalAlignment = VerticalAlignment.Center,
+            HorizontalAlignment = HorizontalAlignment.Left
         };
         Grid.SetColumn(terminal, 1);
 
@@ -268,12 +244,12 @@ public partial class MainWindow : Window
         return shell;
     }
 
-    private static System.Windows.Media.Brush BrushFor(int remaining) =>
+    private static Brush BrushFor(int remaining) =>
         remaining switch
         {
-            >= 50 => new SolidColorBrush(WpfColor.FromRgb(34, 197, 94)),
-            >= 20 => new SolidColorBrush(WpfColor.FromRgb(245, 158, 11)),
-            _ => new SolidColorBrush(WpfColor.FromRgb(239, 68, 68))
+            >= 50 => new SolidColorBrush(Color.FromRgb(34, 197, 94)),
+            >= 20 => new SolidColorBrush(Color.FromRgb(245, 158, 11)),
+            _ => new SolidColorBrush(Color.FromRgb(239, 68, 68))
         };
 
     private static string BuildTooltip(string label, QuotaWindow quota)
@@ -289,18 +265,18 @@ public partial class MainWindow : Window
         BatteryStack.Children.Add(CreateStatusSlot(
             "!",
             $"CxCell could not read Codex usage.\n{message}",
-            WpfBrushes.OrangeRed));
+            Brushes.OrangeRed));
         Height = NavigationIconPitchDip;
         TrackCodexWindow();
     }
 
-    private static UIElement CreateStatusSlot(string value, string tooltip, System.Windows.Media.Brush foreground)
+    private static UIElement CreateStatusSlot(string value, string tooltip, Brush foreground)
     {
         var slot = new Grid
         {
             Width = OverlayWidthDip,
             Height = NavigationIconPitchDip,
-            Background = WpfBrushes.Transparent,
+            Background = Brushes.Transparent,
             ToolTip = tooltip
         };
 
@@ -310,8 +286,8 @@ public partial class MainWindow : Window
             Foreground = foreground,
             FontWeight = FontWeights.Bold,
             FontSize = 14,
-            HorizontalAlignment = WpfHorizontalAlignment.Center,
-            VerticalAlignment = WpfVerticalAlignment.Center
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center
         });
 
         return slot;
@@ -337,11 +313,7 @@ public partial class MainWindow : Window
         }
         finally
         {
-            _trayIcon.Visible = false;
-            _trayIcon.Dispose();
-            _trayMenu.Dispose();
             _shutdown.Dispose();
-
             _shutdownCompleted = true;
             _ = Dispatcher.BeginInvoke(new Action(Close));
         }
