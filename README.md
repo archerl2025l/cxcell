@@ -87,6 +87,12 @@ For UI development without installing:
 dotnet run --project .\src\CxCell\CxCell.csproj
 ```
 
+## Self-hosted runner fallback
+
+A manual Windows self-hosted workflow is available at `.github/workflows/ci-self-hosted.yml`. It is intentionally not triggered by pull requests because this repository is public.
+
+See `docs/self-hosted-runner.md` for registration, service installation, first-run validation, and reboot validation.
+
 ## Development flow
 
 The repository uses a feature-branch workflow:
