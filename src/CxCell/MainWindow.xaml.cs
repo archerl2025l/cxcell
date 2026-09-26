@@ -253,7 +253,7 @@ public partial class MainWindow : Window
         return shell;
     }
 
-    private static Brush BrushFor(int remaining) =>
+    private static System.Windows.Media.Brush BrushFor(int remaining) =>
         remaining switch
         {
             >= 50 => new SolidColorBrush(Color.FromRgb(34, 197, 94)),
@@ -279,7 +279,7 @@ public partial class MainWindow : Window
         TrackCodexWindow();
     }
 
-    private static UIElement CreateStatusSlot(string value, string tooltip, Brush foreground)
+    private static UIElement CreateStatusSlot(string value, string tooltip, System.Windows.Media.Brush foreground)
     {
         var slot = new Grid
         {
