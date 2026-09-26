@@ -22,11 +22,21 @@ public sealed class CodexWindowLocator
             var processName = process.ProcessName;
             var title = process.MainWindowTitle;
 
-            if (!CodexHostMatcher.IsSupportedHost(processName, title) ||
-                !GetWindowRect(hwnd, out var rect))
+            if (!CodexHostMatcher.IsSupportedHost(processName, title))
                 return false;
 
-            bounds = new WindowBounds(rect.Left, rect.Top, rect.Right, rect.Bottom);
+            // GetWindowRect includes non-client/resizable frame offsets that vary between
+            // maximized and restored windows. The left rail is part of the client area, so
+            // anchor against client coordinates converted to screen pixels.
+            if (!GetClientRect(hwnd, out var clientRect))
+                return false;
+
+            var topLeft = new Point { X = clientRect.Left, Y = clientRect.Top };
+            var bottomRight = new Point { X = clientRect.Right, Y = clientRect.Bottom };
+            if (!ClientToScreen(hwnd, ref topLeft) || !ClientToScreen(hwnd, ref bottomRight))
+                return false;
+
+            bounds = new WindowBounds(topLeft.X, topLeft.Y, bottomRight.X, bottomRight.Y);
             return true;
         }
         catch
@@ -51,7 +61,11 @@ public sealed class CodexWindowLocator
 
     [DllImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
-    private static extern bool GetWindowRect(IntPtr hWnd, out Rect rect);
+    private static extern bool GetClientRect(IntPtr hWnd, out Rect rect);
+
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool ClientToScreen(IntPtr hWnd, ref Point point);
 
     [StructLayout(LayoutKind.Sequential)]
     private struct Rect
@@ -60,6 +74,13 @@ public sealed class CodexWindowLocator
         public int Top;
         public int Right;
         public int Bottom;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct Point
+    {
+        public int X;
+        public int Y;
     }
 }
 
