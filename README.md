@@ -9,6 +9,8 @@ CxCell is a Windows companion overlay for the Codex desktop app. It shows the cu
 - Hovering a battery shows its reset time in local time.
 - Pro/other plans: quota windows are driven by what Codex actually reports. If a 5-hour window is absent, CxCell does not invent or display one.
 - The overlay follows the foreground Codex window and hides when Codex is not foreground.
+- Battery centers use the same vertical slot rhythm as the left-rail icons and are anchored relative to the Help icon.
+- CxCell adds a system-tray menu with refresh and clean exit actions.
 
 ## How it reads quota
 
@@ -67,3 +69,4 @@ Unit tests currently cover Plus dual-window parsing, Pro-style weekly-only parsi
 6. Hover each battery and verify the reset time.
 7. Compare the displayed remaining percentages with Codex's own usage view.
 8. Minimize/switch away from Codex and confirm the overlay disappears.
+9. Right-click the CxCell tray icon and choose `退出 CxCell`; confirm the process exits cleanly.
