@@ -28,6 +28,7 @@ public partial class MainWindow : Window
     private readonly DispatcherTimer _positionTimer;
     private readonly DispatcherTimer _refreshTimer;
     private readonly CancellationTokenSource _shutdown = new();
+    private readonly bool _managedLifecycle;
     private readonly WinForms.NotifyIcon _trayIcon;
     private readonly WinForms.ContextMenuStrip _trayMenu;
 
@@ -36,8 +37,9 @@ public partial class MainWindow : Window
     private bool _shutdownStarted;
     private bool _shutdownCompleted;
 
-    public MainWindow()
+    public MainWindow(bool managedLifecycle = false)
     {
+        _managedLifecycle = managedLifecycle;
         InitializeComponent();
 
         _positionTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(250) };
@@ -51,7 +53,10 @@ public partial class MainWindow : Window
             Dispatcher.BeginInvoke(new Action(async () => await RefreshUsageAsync())));
         _trayMenu.Items.Add(new WinForms.ToolStripSeparator());
         _trayMenu.Items.Add("退出 CxCell", null, (_, _) =>
-            Dispatcher.BeginInvoke(new Action(Close)));
+        {
+            Environment.ExitCode = CompanionWatcher.UserExitCode;
+            Dispatcher.BeginInvoke(new Action(Close));
+        });
 
         _trayIcon = new WinForms.NotifyIcon
         {
@@ -109,6 +114,12 @@ public partial class MainWindow : Window
 
     private void TrackCodexWindow()
     {
+        if (_managedLifecycle && !CodexHostProcess.IsRunning())
+        {
+            Close();
+            return;
+        }
+
         if (!_windowLocator.TryGetForegroundCodexWindow(out var bounds))
         {
             Opacity = 0;
