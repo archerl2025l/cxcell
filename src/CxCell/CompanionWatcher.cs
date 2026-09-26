@@ -8,7 +8,7 @@ public static class CompanionWatcher
     public const int UserExitCode = 42;
     private const string WatcherMutexName = @"Local\CxCell.Watcher.Singleton";
 
-    public static async Task<int> RunAsync(CancellationToken cancellationToken)
+    public static async Task<int> RunAsync(string overlayExecutablePath, CancellationToken cancellationToken)
     {
         using var mutex = new Mutex(initiallyOwned: true, WatcherMutexName, out var ownsMutex);
         if (!ownsMutex)
@@ -45,7 +45,7 @@ public static class CompanionWatcher
                     }
 
                     if (overlay is null && !suppressedUntilHostStops)
-                        overlay = StartOverlay();
+                        overlay = StartOverlay(overlayExecutablePath);
                 }
 
                 await Task.Delay(750, cancellationToken);
@@ -66,31 +66,25 @@ public static class CompanionWatcher
         return 0;
     }
 
-    public static void StartDetached()
+    public static void StartDetached(string watcherExecutablePath, string overlayExecutablePath)
     {
-        var executable = Environment.ProcessPath
-            ?? throw new InvalidOperationException("Unable to resolve the CxCell executable path.");
-
         Process.Start(new ProcessStartInfo
         {
-            FileName = executable,
-            Arguments = "--watcher",
+            FileName = watcherExecutablePath,
+            Arguments = $"--watcher --overlay-exe \"{overlayExecutablePath}\"",
             UseShellExecute = true,
-            WorkingDirectory = Path.GetDirectoryName(executable) ?? Environment.CurrentDirectory
+            WorkingDirectory = Path.GetDirectoryName(watcherExecutablePath) ?? Environment.CurrentDirectory
         });
     }
 
-    private static Process StartOverlay()
+    private static Process StartOverlay(string overlayExecutablePath)
     {
-        var executable = Environment.ProcessPath
-            ?? throw new InvalidOperationException("Unable to resolve the CxCell executable path.");
-
         return Process.Start(new ProcessStartInfo
         {
-            FileName = executable,
+            FileName = overlayExecutablePath,
             Arguments = "--overlay-managed",
             UseShellExecute = true,
-            WorkingDirectory = Path.GetDirectoryName(executable) ?? Environment.CurrentDirectory
+            WorkingDirectory = Path.GetDirectoryName(overlayExecutablePath) ?? Environment.CurrentDirectory
         }) ?? throw new InvalidOperationException("Unable to start the CxCell overlay.");
     }
 
