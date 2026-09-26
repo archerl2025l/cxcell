@@ -5,7 +5,6 @@ namespace CxCell;
 
 public static class CompanionWatcher
 {
-    public const int UserExitCode = 42;
     private const string WatcherMutexName = @"Local\CxCell.Watcher.Singleton";
 
     public static async Task<int> RunAsync(string overlayExecutablePath, CancellationToken cancellationToken)
@@ -15,7 +14,6 @@ public static class CompanionWatcher
             return 0;
 
         Process? overlay = null;
-        var suppressedUntilHostStops = false;
 
         try
         {
@@ -25,7 +23,6 @@ public static class CompanionWatcher
 
                 if (!hostRunning)
                 {
-                    suppressedUntilHostStops = false;
                     if (overlay is not null)
                     {
                         await StopOverlayAsync(overlay);
@@ -37,14 +34,11 @@ public static class CompanionWatcher
                 {
                     if (overlay is { HasExited: true })
                     {
-                        if (overlay.ExitCode == UserExitCode)
-                            suppressedUntilHostStops = true;
-
                         overlay.Dispose();
                         overlay = null;
                     }
 
-                    if (overlay is null && !suppressedUntilHostStops)
+                    if (overlay is null)
                         overlay = StartOverlay(overlayExecutablePath);
                 }
 
