@@ -6,7 +6,7 @@ $installDir = Join-Path $env:LOCALAPPDATA "CxCell"
 $exe = Join-Path $installDir "CxCell.exe"
 
 Write-Host "Stopping existing CxCell processes..."
-Get-Process CxCell -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+Get-Process CxCell,CxCellWatcher -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
 
 New-Item -ItemType Directory -Force -Path $installDir | Out-Null
 
