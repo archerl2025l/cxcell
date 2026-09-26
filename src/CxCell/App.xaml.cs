@@ -1,3 +1,4 @@
+using System.IO;
 using System.Windows;
 
 namespace CxCell;
@@ -14,11 +15,15 @@ public partial class App : System.Windows.Application
 
         if (args.Contains("--install-autostart", StringComparer.OrdinalIgnoreCase))
         {
-            var executable = Environment.ProcessPath
+            var overlayExecutable = Environment.ProcessPath
                 ?? throw new InvalidOperationException("Unable to resolve the CxCell executable path.");
+            var installDirectory = Path.GetDirectoryName(overlayExecutable)
+                ?? throw new InvalidOperationException("Unable to resolve the CxCell install directory.");
+            var watcherExecutable = Path.Combine(installDirectory, "CxCellWatcher.exe");
 
-            StartupRegistration.Install(executable);
-            CompanionWatcher.StartDetached();
+            File.Copy(overlayExecutable, watcherExecutable, overwrite: true);
+            StartupRegistration.Install(watcherExecutable, overlayExecutable);
+            CompanionWatcher.StartDetached(watcherExecutable, overlayExecutable);
             Shutdown(0);
             return;
         }
@@ -35,9 +40,14 @@ public partial class App : System.Windows.Application
             ShutdownMode = ShutdownMode.OnExplicitShutdown;
             _watcherShutdown = new CancellationTokenSource();
 
+            var overlayExecutable = GetArgumentValue(args, "--overlay-exe")
+                ?? Path.Combine(
+                    Path.GetDirectoryName(Environment.ProcessPath ?? string.Empty) ?? Environment.CurrentDirectory,
+                    "CxCell.exe");
+
             _ = Task.Run(async () =>
             {
-                var exitCode = await CompanionWatcher.RunAsync(_watcherShutdown.Token);
+                var exitCode = await CompanionWatcher.RunAsync(overlayExecutable, _watcherShutdown.Token);
                 await Dispatcher.InvokeAsync(() => Shutdown(exitCode));
             });
             return;
@@ -54,5 +64,16 @@ public partial class App : System.Windows.Application
         _watcherShutdown?.Cancel();
         _watcherShutdown?.Dispose();
         base.OnExit(e);
+    }
+
+    private static string? GetArgumentValue(string[] args, string key)
+    {
+        for (var i = 0; i < args.Length - 1; i++)
+        {
+            if (string.Equals(args[i], key, StringComparison.OrdinalIgnoreCase))
+                return args[i + 1];
+        }
+
+        return null;
     }
 }
