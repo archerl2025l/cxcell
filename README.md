@@ -12,7 +12,6 @@ CxCell is a Windows companion for the Codex/ChatGPT desktop app. It displays Cod
 - Positioning is anchored to the Codex/ChatGPT **client area**, so restored and maximized windows use the same visual center line.
 - The overlay only appears while Codex/ChatGPT is foreground.
 - A small background watcher starts with Windows, detects Codex/ChatGPT, starts the overlay when the host starts, and closes the overlay when the host exits.
-- Right-click the CxCell tray icon to refresh quota or exit CxCell for the current Codex session.
 
 ## How quota is read
 
@@ -100,4 +99,3 @@ The repository uses a feature-branch workflow:
 8. Compare the displayed remaining percentages with Codex's own usage view.
 9. Close Codex/ChatGPT and confirm the overlay process exits.
 10. Re-open Codex/ChatGPT and confirm the watcher starts the overlay again.
-11. Right-click the CxCell tray icon and choose `退出 CxCell`; confirm it stays suppressed until the current Codex session ends.
