@@ -43,8 +43,8 @@ public sealed class CodexUsageClient : IAsyncDisposable
 
         var psi = new ProcessStartInfo
         {
-            FileName = "codex",
-            Arguments = "app-server --listen stdio://",
+            FileName = "cmd.exe",
+            Arguments = "/d /s /c \"codex app-server --listen stdio://\"",
             RedirectStandardInput = true,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
