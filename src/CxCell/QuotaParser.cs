@@ -36,7 +36,7 @@ public static class QuotaParser
             }
             else if (kind == QuotaKind.Weekly)
             {
-                weekly ??= ToQuotaWindow(kind, window.Value);
+                weekly ??= ToQuotaWindow(kind.Value, window.Value);
             }
         }
 
@@ -55,7 +55,7 @@ public static class QuotaParser
             if (kind == QuotaKind.FiveHour)
                 fiveHour = ToQuotaWindow(kind.Value, primary.Value);
             else if (kind == QuotaKind.Weekly)
-                weekly = ToQuotaWindow(kind, primary.Value);
+                weekly = ToQuotaWindow(kind.Value, primary.Value);
         }
 
         return new QuotaSnapshot(planType, fiveHour, weekly);
